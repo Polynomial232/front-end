@@ -1,0 +1,11 @@
+.banner-login {
+    width: 400px;
+    height: 200px;
+    background: url("images/contact.jpg") top no-repeat;
+    background-size: cover;
+}
+
+.btn-success.lightgreen {
+    background-color: #01d28e;
+    border: #01d28e;
+}
