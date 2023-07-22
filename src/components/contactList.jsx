@@ -1,11 +1,22 @@
 import React, { useEffect, useState } from "react"
 import Cookies from "universal-cookie"
 import axios from "axios"
-import { PiTrashFill } from "react-icons/pi"
+import { PiTrashFill, PiPencil } from "react-icons/pi"
+import Container from 'react-bootstrap/Container';
+import Table from 'react-bootstrap/Table';
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
+import "./contactList.css"
 
 function ContactList({ childFunc }) {
     const cookies = new Cookies()
     const authorization = cookies.get("Authorization")
+    const [show, setShow] = useState(false);
+
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+    
+    const [contactId, setContactId] = useState('')
     const [contacts, setContacts] = useState([])
 
     useEffect(() => {
@@ -24,6 +35,22 @@ function ContactList({ childFunc }) {
             .then((res) => setContacts(res.data.data))
             .catch((err) => console.log(err))
     }
+
+    function getDataById(id) {
+        axios
+            .get("http://127.0.0.1/laravel-api/public/api/contacts", {
+                params: {
+                    id: id
+                },
+                headers: {
+                    Accept: "application/json",
+                    Authorization: `Bearer ${authorization}`,
+                },
+            })
+            .then((res) => setContacts(res.data.data))
+            .catch((err) => console.log(err))
+    }
+
 
     function searchUpdate(params) {
         axios
@@ -50,32 +77,62 @@ function ContactList({ childFunc }) {
             .catch((err) => console.log(err))
     }
 
+    function modalShow(id){
+        setContactId(id)
+        handleShow()
+    }
+
     return (
         <>
-            <table className="table text-start">
-                <thead>
-                    <tr>
-                        <th>Nama</th>
-                        <th>Email</th>
-                        <th>Nomor</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {contacts.map((contact) => (
-                        <tr key={contact.id}>
-                            <td>{contact.nama}</td>
-                            <td>{contact.email}</td>
-                            <td>{contact.nomor}</td>
-                            <td>
-                                <PiTrashFill
-                                    onClick={() => deleteData(contact.id)}
-                                />
-                            </td>
+            <Modal show={show} onHide={handleClose}>
+                <Modal.Header closeButton>
+                <Modal.Title>{contactId}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>Woohoo, you are reading this text in a modal!</Modal.Body>
+                <Modal.Footer>
+                <Button variant="secondary" onClick={handleClose}>
+                    Close
+                </Button>
+                <Button variant="primary" onClick={handleClose}>
+                    Save Changes
+                </Button>
+                </Modal.Footer>
+            </Modal>
+            <Container fluid>
+                <Table hover>
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Email</th>
+                            <th>Nomor</th>
+                            <th></th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {contacts.map((contact) => (
+                            <tr key={contact.id}>
+                                <td>{contact.nama}</td>
+                                <td>{contact.email}</td>
+                                <td>{contact.nomor}</td>
+                                <td>
+                                    <div
+                                        className="d-flex gap-2 fs-5"
+                                    >
+                                        <PiPencil 
+                                            className="pointer"
+                                            onClick={() => modalShow(contact.id)}
+                                        />
+                                        <PiTrashFill
+                                            className="text-danger pointer"
+                                            onClick={() => deleteData(contact.id)}
+                                        />
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            </Container>
         </>
     )
 }
